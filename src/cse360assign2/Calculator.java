@@ -8,6 +8,8 @@
  */
 package cse360assign2;
 
+import java.util.*; // Needed for Queue
+
 /**
  * Defines the Calculator class.
  * Calculator operations include: add, subtract, multiply, divide.
@@ -16,6 +18,8 @@ package cse360assign2;
 public class Calculator {
 
 	private int total;
+	private Queue<String> history;
+	private Queue<String> tmpHistory;
 	
 	/**
 	 * Constructor for the Calculator class.
@@ -23,6 +27,11 @@ public class Calculator {
 	 */
 	public Calculator () {
 		total = 0;  // not needed - included for clarity
+		
+		// Initialize the history queues
+		history = new LinkedList<String>();
+		history.offer("0");
+		tmpHistory = new LinkedList<String>();
 	}
 	
 	/**
@@ -39,6 +48,8 @@ public class Calculator {
 	 */
 	public void add (int value) {
 		total += value;
+		history.offer("+");
+		history.offer(Integer.toString(value));
 	}
 	
 	/**
@@ -47,6 +58,8 @@ public class Calculator {
 	 */
 	public void subtract (int value) {
 		total -= value;
+		history.offer("-");
+		history.offer(Integer.toString(value));
 	}
 	
 	/**
@@ -55,6 +68,8 @@ public class Calculator {
 	 */
 	public void multiply (int value) {
 		total *= value;
+		history.offer("*");
+		history.offer(Integer.toString(value));
 	}
 	
 	/**
@@ -63,13 +78,40 @@ public class Calculator {
 	 */
 	public void divide (int value) {
 		total = ( value == 0 ) ? 0 : total / value;
+		history.offer("/");
+		history.offer(Integer.toString(value));
 	}
 	
 	/**
 	 * Retrieves and yields the command history for this object.
+	 * This function saves the history for the lifetime of this
+	 * object.
 	 * @return This calculator's command history.
 	 */
 	public String getHistory () {
-		return "";
+		String concatHistory = "";
+		
+		// Build the return string.
+		String nextEntry = history.poll();
+		tmpHistory.offer(nextEntry); // Save the history onto our temp queue.
+		while(nextEntry != null)
+		{
+			concatHistory += " ";
+			concatHistory += nextEntry;
+			
+			concatHistory += " ";
+			nextEntry = history.poll();
+			tmpHistory.offer(nextEntry); // Save the history onto our temp queue.
+		}
+		
+		// Restore the history we cleared when building the return string.
+		String tmpEntry = tmpHistory.poll();
+		while(tmpEntry != null)
+		{
+			history.offer(tmpEntry);
+			tmpEntry = tmpHistory.poll();
+		}
+		
+		return concatHistory;
 	}
 }
